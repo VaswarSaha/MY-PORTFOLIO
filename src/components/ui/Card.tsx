@@ -1,29 +1,32 @@
-import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
-import clsx from 'clsx';
+import { ReactNode } from "react";
+import { motion } from "framer-motion";
+import clsx from "clsx";
 
 interface CardProps {
   children: ReactNode;
   className?: string;
   hover?: boolean;
+  as?: "div" | "article";
 }
 
-const Card = ({ children, className, hover = true }: CardProps) => {
+export default function Card({ children, className, hover = true, as = "div" }: CardProps) {
+  const Comp = motion[as];
+
   return (
-    <motion.div
+    <Comp
       className={clsx(
-        'bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6',
-        hover && 'hover:shadow-2xl transition-shadow duration-300',
+        "glass glass-edge rounded-2xl p-6",
+        hover && "transition-transform duration-300",
         className
       )}
-      whileHover={hover ? { y: -5 } : undefined}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      whileHover={
+        hover
+          ? { y: -6, boxShadow: "0 20px 45px -20px rgb(124 92 255 / 0.35)" }
+          : undefined
+      }
+      transition={{ type: "spring", stiffness: 300, damping: 24 }}
     >
       {children}
-    </motion.div>
+    </Comp>
   );
-};
-
-export default Card;
+}

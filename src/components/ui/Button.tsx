@@ -1,58 +1,40 @@
-import { motion } from 'framer-motion';
-import { ReactNode } from 'react';
-import clsx from 'clsx';
+import { ReactNode } from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
+import clsx from "clsx";
 
-interface ButtonProps {
+type Variant = "primary" | "ghost";
+
+interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
-  href?: string;
-  onClick?: () => void;
+  variant?: Variant;
   className?: string;
 }
 
-const Button = ({
+export default function Button({
   children,
-  variant = 'primary',
-  size = 'md',
-  href,
-  onClick,
+  variant = "primary",
   className,
-}: ButtonProps) => {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-full transition-all';
-  
-  const variants = {
-    primary: 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:shadow-purple-500/50',
-    secondary: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:border-blue-600 dark:hover:border-blue-400',
-    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-white',
+  ...props
+}: ButtonProps) {
+  const base =
+    "relative inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-colors duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet";
+
+  const variants: Record<Variant, string> = {
+    primary:
+      "text-white bg-gradient-to-r from-violet to-cyan shadow-glow hover:shadow-[0_0_55px_-6px_rgb(124_92_255_/_0.6)]",
+    ghost:
+      "glass text-ink hover:bg-white/10",
   };
-
-  const sizes = {
-    sm: 'px-4 py-2 text-sm',
-    md: 'px-6 py-3 text-base',
-    lg: 'px-8 py-4 text-lg',
-  };
-
-  const classes = clsx(
-    baseClasses,
-    variants[variant],
-    sizes[size],
-    className
-  );
-
-  const MotionComponent = href ? motion.a : motion.button;
 
   return (
-    <MotionComponent
-      href={href}
-      onClick={onClick}
-      className={classes}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+    <motion.button
+      whileHover={{ y: -2, scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 22 }}
+      className={clsx(base, variants[variant], className)}
+      {...props}
     >
       {children}
-    </MotionComponent>
+    </motion.button>
   );
-};
-
-export default Button;
+}

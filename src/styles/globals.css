@@ -1,7 +1,12 @@
 /* -----------------------------
-   Import Tailwind Base
+   Import Tailwind
 ------------------------------ */
 @import "tailwindcss";
+
+/* Make `dark:` utilities respond to a .dark class on <html>,
+   instead of only the OS-level prefers-color-scheme. This matches
+   the toggle logic in Navigation.tsx (classList.toggle("dark")). */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* -----------------------------
    Theme Variables
@@ -10,23 +15,41 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Unified variable naming */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
   --font-sans: var(--font-geist-sans, Arial, Helvetica, sans-serif);
   --font-mono: var(--font-geist-mono, monospace);
 
-  /* Extra theme variables */
   --radius: 6px;
   --transition: 200ms ease;
+
+  /* Aurora accent palette */
+  --aurora-violet: 124 92 255;
+  --aurora-cyan: 76 219 209;
+  --aurora-pink: 255 111 165;
+  --glass-tint: 255 255 255;
+  --glass-alpha: 0.55;
+  --glass-border-alpha: 0.6;
 }
 
-/* Dark mode  */
+/* Dark mode driven by the .dark class (toggle button), falling back
+   to system preference only if the user hasn't chosen yet. */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --glass-tint: 255 255 255;
+  --glass-alpha: 0.06;
+  --glass-border-alpha: 0.14;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --glass-tint: 255 255 255;
+    --glass-alpha: 0.06;
+    --glass-border-alpha: 0.14;
   }
 }
 
@@ -74,11 +97,8 @@ body {
   background: linear-gradient(to bottom, #2563eb, #7c3aed);
 }
 
-/* Dark mode scrollbar */
-@media (prefers-color-scheme: dark) {
-  ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.08);
-  }
+.dark ::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* -----------------------------
@@ -113,4 +133,118 @@ body {
   outline-offset: 3px;
   border-radius: var(--radius);
   transition: outline var(--transition);
+}
+
+/* =============================
+   Glassmorphism
+============================= */
+.glass {
+  background: rgb(var(--glass-tint) / var(--glass-alpha));
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgb(var(--glass-tint) / var(--glass-border-alpha));
+  box-shadow:
+    0 1px 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 8px 32px -14px rgb(0 0 0 / 0.35);
+}
+
+.dark .glass {
+  box-shadow:
+    0 1px 1px 0 rgb(255 255 255 / 0.05) inset,
+    0 8px 32px -12px rgb(0 0 0 / 0.6);
+}
+
+.glass-edge {
+  position: relative;
+}
+.glass-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgb(var(--aurora-violet) / 0.5),
+    transparent 30%,
+    transparent 70%,
+    rgb(var(--aurora-cyan) / 0.4)
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* =============================
+   Aurora background
+============================= */
+.aurora-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--color-background);
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.4;
+  will-change: transform;
+}
+
+.dark .aurora-blob {
+  opacity: 0.55;
+}
+
+.aurora-blob.one {
+  width: 42vw;
+  height: 42vw;
+  top: -10%;
+  left: -8%;
+  background: radial-gradient(circle at 30% 30%, rgb(var(--aurora-violet) / 0.5), transparent 70%);
+  animation: drift-one 26s ease-in-out infinite;
+}
+.aurora-blob.two {
+  width: 38vw;
+  height: 38vw;
+  top: 20%;
+  right: -10%;
+  background: radial-gradient(circle at 60% 40%, rgb(var(--aurora-cyan) / 0.4), transparent 70%);
+  animation: drift-two 32s ease-in-out infinite;
+}
+.aurora-blob.three {
+  width: 34vw;
+  height: 34vw;
+  bottom: -12%;
+  left: 20%;
+  background: radial-gradient(circle at 50% 50%, rgb(var(--aurora-pink) / 0.3), transparent 70%);
+  animation: drift-three 22s ease-in-out infinite;
+}
+
+@keyframes drift-one {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(6vw, 8vh) scale(1.12); }
+}
+@keyframes drift-two {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-7vw, 6vh) scale(1.08); }
+}
+@keyframes drift-three {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(5vw, -6vh) scale(1.15); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob { animation: none !important; }
+  html { scroll-behavior: auto !important; }
+}
+
+.text-aurora {
+  background: linear-gradient(100deg, rgb(var(--aurora-violet)), rgb(var(--aurora-cyan)) 60%, rgb(var(--aurora-pink)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }

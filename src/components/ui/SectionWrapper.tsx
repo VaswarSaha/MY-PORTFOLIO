@@ -1,6 +1,6 @@
-import { motion, useInView } from 'framer-motion';
-import { ReactNode, useRef } from 'react';
-import clsx from 'clsx';
+import { ReactNode } from "react";
+import { motion, Variants } from "framer-motion";
+import clsx from "clsx";
 
 interface SectionWrapperProps {
   children: ReactNode;
@@ -8,18 +8,24 @@ interface SectionWrapperProps {
   id?: string;
 }
 
-const SectionWrapper = ({ children, className, id }: SectionWrapperProps) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: '-100px' });
+const reveal: Variants = {
+  hidden: { opacity: 0, y: 32 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
+const SectionWrapper = ({ children, className, id }: SectionWrapperProps) => {
   return (
     <motion.section
-      ref={ref}
       id={id}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
-      className={clsx('py-20 px-6', className)}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.3 }}
+      variants={reveal}
+      className={clsx("py-20 px-6", className)}
     >
       {children}
     </motion.section>
