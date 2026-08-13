@@ -15,21 +15,16 @@ const Navigation = () => {
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Load saved theme on mount
+  // The no-flash script in _document.tsx already applies the correct
+  // .dark/.light class to <html> before hydration, so just read it back
+  // into state here instead of re-deriving it from localStorage/system
+  // preference (avoids the two sources of truth disagreeing).
   useEffect(() => {
-    const saved = window.localStorage.getItem("theme");
-    const initial = saved === "dark" ? "dark" : saved === "light" ? "light" : null;
-
-    if (initial) {
-      setTheme(initial);
-      document.documentElement.classList.toggle("dark", initial === "dark");
-      document.documentElement.classList.toggle("light", initial === "light");
-    } else {
-      // No saved preference yet — respect system, but mark explicitly
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      setTheme(prefersDark ? "dark" : "light");
-    }
+    const isDark = document.documentElement.classList.contains("dark");
+    setTheme(isDark ? "dark" : "light");
   }, []);
 
   const toggleTheme = () => {
@@ -42,7 +37,13 @@ const Navigation = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const currentScrollY = window.scrollY;
+      setScrolled(currentScrollY > 50);
+
+      // Hide the navbar while scrolling down, reveal it while scrolling up.
+      // Stay visible near the top of the page regardless of direction.
+      setHidden(currentScrollY > lastScrollY && currentScrollY > 120);
+      setLastScrollY(currentScrollY);
 
       const sections = NAV_ITEMS.map((item) => item.id);
       const current = sections.find((section) => {
@@ -58,7 +59,7 @@ const Navigation = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const scrollToSection = (id: string) => {
     setMenuOpen(false);
@@ -75,8 +76,8 @@ const Navigation = () => {
     <header className="fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
       <motion.nav
         initial={{ y: -60, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        animate={{ y: hidden ? -120 : 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={`glass glass-edge w-full max-w-5xl rounded-full px-5 py-3 transition-shadow duration-300 ${
           scrolled ? "shadow-[0_10px_30px_-15px_rgba(0,0,0,0.4)]" : ""
         }`}
@@ -94,6 +95,7 @@ const Navigation = () => {
               <motion.button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
+                aria-current={activeSection === item.id ? "page" : undefined}
                 className={`relative px-2 py-1 text-sm font-medium transition-colors ${
                   activeSection === item.id
                     ? "text-blue-600 dark:text-blue-400"
@@ -116,7 +118,7 @@ const Navigation = () => {
 
           <div className="flex items-center gap-2">
             <button
-              aria-label="Toggle theme"
+              aria-label={theme === "light" ? "Switch to dark theme" : "Switch to light theme"}
               onClick={toggleTheme}
               className="glass flex h-9 w-9 items-center justify-center rounded-full text-gray-700 transition-colors hover:bg-white/10 dark:text-gray-200"
             >
@@ -124,6 +126,7 @@ const Navigation = () => {
             </button>
             <button
               aria-label="Toggle menu"
+              aria-expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
               className="glass flex h-9 w-9 items-center justify-center rounded-full text-gray-700 dark:text-gray-200 md:hidden"
             >
@@ -146,6 +149,7 @@ const Navigation = () => {
               <li key={item.id}>
                 <button
                   onClick={() => scrollToSection(item.id)}
+                  aria-current={activeSection === item.id ? "page" : undefined}
                   className="block w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-gray-800 hover:bg-white/10 dark:text-gray-100"
                 >
                   {item.label}

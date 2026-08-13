@@ -17,13 +17,16 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "relative inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-colors duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet";
+    "relative inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-wide transition-shadow duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:focus-visible:outline-blue-400";
 
+  // NOTE: previously referenced bg-violet / to-cyan / shadow-glow / outline-violet /
+  // text-ink, which aren't defined anywhere in globals.css or the Tailwind config,
+  // so the button rendered unstyled. Swapped in the blue -> purple gradient and
+  // glass treatment already used across Hero, Navigation, and Contact.
   const variants: Record<Variant, string> = {
     primary:
-      "text-white bg-gradient-to-r from-violet to-cyan shadow-glow hover:shadow-[0_0_55px_-6px_rgb(124_92_255_/_0.6)]",
-    ghost:
-      "glass text-ink hover:bg-white/10",
+      "text-white bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/50",
+    ghost: "glass text-gray-900 hover:bg-white/10 dark:text-white",
   };
 
   return (

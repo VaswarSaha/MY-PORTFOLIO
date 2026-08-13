@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useInView, Variants, Transition } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import type { Variants, Transition } from "framer-motion";
 import { useRef } from "react";
 import {
   SiReact,
@@ -10,12 +11,8 @@ import {
   SiNodedotjs,
   SiTailwindcss,
   SiMongodb,
-  SiPostgresql,
   SiGit,
-  SiDocker,
-  SiFirebase,
 } from "react-icons/si";
-import { FaAws } from "react-icons/fa";
 
 const Skills = () => {
   const ref = useRef(null);
@@ -37,16 +34,12 @@ const Skills = () => {
       skills: [
         { name: "Node.js", icon: SiNodedotjs, color: "#339933", level: 85 },
         { name: "MongoDB", icon: SiMongodb, color: "#47A248", level: 80 },
-        { name: "PostgreSQL", icon: SiPostgresql, color: "#4169E1", level: 75 },
-        { name: "Firebase", icon: SiFirebase, color: "#FFCA28", level: 82 },
       ],
     },
     {
       title: "Tools & Others",
       skills: [
         { name: "Git", icon: SiGit, color: "#F05032", level: 90 },
-        { name: "Docker", icon: SiDocker, color: "#2496ED", level: 70 },
-        { name: "AWS", icon: FaAws, color: "#FF9900", level: 65 },
       ],
     },
   ];
@@ -84,14 +77,14 @@ const Skills = () => {
         </motion.div>
 
         <motion.div variants={containerVariants} className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {skillCategories.map((category, categoryIndex) => (
-            <motion.div key={categoryIndex} variants={itemVariants} className="glass glass-edge rounded-2xl p-6">
+          {skillCategories.map((category) => (
+            <motion.div key={category.title} variants={itemVariants} className="glass glass-edge rounded-2xl p-6">
               <h3 className="mb-6 text-2xl font-bold text-gray-900 dark:text-white">{category.title}</h3>
 
               <div className="space-y-4">
                 {category.skills.map((skill, skillIndex) => (
                   <motion.div
-                    key={skillIndex}
+                    key={skill.name}
                     initial={{ opacity: 0, x: -20 }}
                     animate={isInView ? { opacity: 1, x: 0 } : {}}
                     transition={{ delay: skillIndex * 0.1 }}

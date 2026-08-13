@@ -1,34 +1,45 @@
-import { motion, Variants } from "framer-motion";
+"use client";
+
+import { motion, useReducedMotion } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { FaGithub, FaLinkedin, FaTwitter } from "react-icons/fa";
 
+// TODO: point these at your real profiles before publishing.
+const SOCIAL_LINKS = [
+  { Icon: FaGithub, href: "https://github.com/yourusername", label: "GitHub" },
+  { Icon: FaLinkedin, href: "https://linkedin.com/in/yourusername", label: "LinkedIn" },
+  { Icon: FaTwitter, href: "https://twitter.com/yourusername", label: "Twitter" },
+];
+
 const Hero = () => {
+  const shouldReduceMotion = useReducedMotion();
+
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
+        staggerChildren: shouldReduceMotion ? 0 : 0.2,
+        delayChildren: shouldReduceMotion ? 0 : 0.3,
       },
     },
   };
 
   const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: shouldReduceMotion ? 0 : 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-      },
+      transition: shouldReduceMotion
+        ? { duration: 0.15 }
+        : { type: "spring", stiffness: 100 },
     },
   };
 
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen items-center justify-center overflow-hidden px-6 pt-20"
+      className="relative flex items-center justify-center overflow-hidden px-6 pb-20 pt-32 md:pb-28 md:pt-40"
     >
       {/* Soft glow accents (the aurora field from Header sits behind everything) */}
       <div className="absolute inset-0 -z-10">
@@ -93,11 +104,7 @@ const Hero = () => {
         </motion.div>
 
         <motion.div variants={itemVariants} className="flex justify-center gap-6">
-          {[
-            { Icon: FaGithub, href: "https://github.com/yourusername", label: "GitHub" },
-            { Icon: FaLinkedin, href: "https://linkedin.com/in/yourusername", label: "LinkedIn" },
-            { Icon: FaTwitter, href: "https://twitter.com/yourusername", label: "Twitter" },
-          ].map(({ Icon, href, label }) => (
+          {SOCIAL_LINKS.map(({ Icon, href, label }) => (
             <motion.a
               key={label}
               href={href}
@@ -116,7 +123,7 @@ const Hero = () => {
         <motion.div
           variants={itemVariants}
           className="mt-16"
-          animate={{ y: [0, 10, 0] }}
+          animate={shouldReduceMotion ? {} : { y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
           <svg className="mx-auto h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
